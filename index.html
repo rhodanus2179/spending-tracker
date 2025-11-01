@@ -114,18 +114,62 @@
     }
   }
 
-  function sumWithin(days) {
-    const now = new Date();
-    const cutoff = now.getTime() - days * 24 * 60 * 60 * 1000;
-    return data.records.filter(r => new Date(r.date).getTime() >= cutoff)
-                       .reduce((sum, r) => sum + r.amount, 0);
+  function sumSince(startDate) {
+    return data.records
+      .filter(r => new Date(r.date) >= startDate)
+      .reduce((sum, r) => sum + r.amount, 0);
+  }
+
+  function formatDate(date) {
+    return `${date.getMonth() + 1}/${date.getDate()}`;
   }
 
   function updateDisplay() {
+    const now = new Date();
+
+    // 日・週・月・年の開始日
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const dayOfWeek = (now.getDay() + 6) % 7; // 月曜=0
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - dayOfWeek);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+
     balanceEl.textContent = data.balance;
-    dayEl.textContent = sumWithin(1);
-    weekEl.textContent = sumWithin(7);
-    monthEl.textContent = sumWithin(30);
+    dayEl.textContent = sumSince(startOfDay);
+    weekEl.textContent = sumSince(startOfWeek);
+    monthEl.textContent = sumSince(startOfMonth);
+
+    // 年合計がまだなければ作成
+    if (!document.getElementById('yearTotal')) {
+      const summaryDiv = document.querySelector('.summary');
+      summaryDiv.insertAdjacentHTML('beforeend', `
+        <p>年合計: <span id="yearTotal">0</span> 円<br>
+        <small id="yearRange" style="color:#666"></small></p>
+      `);
+    }
+
+    document.getElementById('yearTotal').textContent = sumSince(startOfYear);
+
+    // 期間ラベルを追加
+    if (!document.getElementById('weekRange')) {
+      const weekP = weekEl.parentElement;
+      weekP.insertAdjacentHTML('beforeend', '<br><small id="weekRange" style="color:#666"></small>');
+    }
+    if (!document.getElementById('monthRange')) {
+      const monthP = monthEl.parentElement;
+      monthP.insertAdjacentHTML('beforeend', '<br><small id="monthRange" style="color:#666"></small>');
+    }
+
+    document.getElementById('weekRange').textContent = `(${formatDate(startOfWeek)}〜${formatDate(endOfWeek)})`;
+    document.getElementById('monthRange').textContent = `(${formatDate(startOfMonth)}〜${formatDate(now)})`;
+    document.getElementById('yearRange').textContent = `(${formatDate(startOfYear)}〜${formatDate(now)})`;
   }
 
   updateDisplay();
