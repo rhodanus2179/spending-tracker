@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>無駄遣い・回避記録アプリ</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  body {
+    font-family: sans-serif;
+    text-align: center;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 2em;
+  }
+  h1 { color: #00897b; }
+  .summary {
+    background: white;
+    border-radius: 10px;
+    padding: 1em;
+    margin-bottom: 1em;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  }
+  .button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5em;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  .button-grid button {
+    padding: 0.5em;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .button-grid .minus { background: #ff8a80; }
+  .button-grid .plus { background: #80cbc4; }
+  .balance {
+    margin-top: 1em;
+    font-size: 1.5em;
+    font-weight: bold;
+  }
+  #resetBtn {
+    margin-top: 0.5em;
+    background: #ccc;
+    border: none;
+    padding: 0.5em 1em;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <h1>無駄遣い・回避記録</h1>
+
+  <div class="summary">
+    <p>日合計: <span id="dayTotal">0</span> 円</p>
+    <p>週合計: <span id="weekTotal">0</span> 円</p>
+    <p>月合計: <span id="monthTotal">0</span> 円</p>
+  </div>
+
+  <div class="button-grid">
+    <button class="minus" onclick="addRecord(-150)">-150円</button>
+    <button class="plus" onclick="addRecord(150)">+150円</button>
+    <button class="minus" onclick="addRecord(-300)">-300円</button>
+    <button class="plus" onclick="addRecord(300)">+300円</button>
+    <button class="minus" onclick="addRecord(-1000)">-1000円</button>
+    <button class="plus" onclick="addRecord(1000)">+1000円</button>
+    <button class="minus" onclick="addRecord(-4000)">-4000円</button>
+    <button class="plus" onclick="addRecord(4000)">+4000円</button>
+  </div>
+
+  <div class="balance">
+    残高: <span id="balance">0</span> 円
+  </div>
+  <button id="resetBtn" onclick="resetBalance()">残高リセット</button>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js');
+  }
+
+  const balanceEl = document.getElementById('balance');
+  const dayEl = document.getElementById('dayTotal');
+  const weekEl = document.getElementById('weekTotal');
+  const monthEl = document.getElementById('monthTotal');
+
+  let data = JSON.parse(localStorage.getItem('spendingData')) || {
+    records: [],
+    balance: 0
+  };
+
+  function saveData() {
+    localStorage.setItem('spendingData', JSON.stringify(data));
+  }
+
+  function addRecord(amount) {
+    const now = new Date();
+    data.records.push({ amount, date: now.toISOString() });
+    data.balance += amount;
+    saveData();
+    updateDisplay();
+  }
+
+  function resetBalance() {
+    if (confirm('残高をリセットしますか？')) {
+      data.balance = 0;
+      data.records = [];
+      saveData();
+      updateDisplay();
+    }
+  }
+
+  function sumWithin(days) {
+    const now = new Date();
+    const cutoff = now.getTime() - days * 24 * 60 * 60 * 1000;
+    return data.records.filter(r => new Date(r.date).getTime() >= cutoff)
+                       .reduce((sum, r) => sum + r.amount, 0);
+  }
+
+  function updateDisplay() {
+    balanceEl.textContent = data.balance;
+    dayEl.textContent = sumWithin(1);
+    weekEl.textContent = sumWithin(7);
+    monthEl.textContent = sumWithin(30);
+  }
+
+  updateDisplay();
+</script>
+</body>
+</html>
