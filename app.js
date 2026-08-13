@@ -3,6 +3,8 @@
 
   const STORAGE_KEY = "spending-tracker.records.v3";
   const LEGACY_STORAGE_KEY = "spending-tracker.records.v2";
+  const QUICK_AMOUNTS_KEY = "spending-tracker.quick-amounts.v1";
+  const DEFAULT_QUICK_AMOUNTS = Object.freeze([150, 400, 1000, 3000]);
   const BACKUP_VERSION = 1;
   const RECENT_LIMIT = 10;
   const TREND_MONTHS = 6;
@@ -28,6 +30,9 @@
     customEntry: document.querySelector("#customEntry"),
     customAmount: document.querySelector("#customAmount"),
     customNote: document.querySelector("#customNote"),
+    quickSettings: document.querySelector("#quickSettings"),
+    quickAmountInputs: [...document.querySelectorAll("[data-quick-setting]")],
+    resetQuickAmountsButton: document.querySelector("#resetQuickAmountsButton"),
     lastAction: document.querySelector("#lastAction"),
     lastActionMessage: document.querySelector("#lastActionMessage"),
     addNoteButton: document.querySelector("#addNoteButton"),
@@ -44,6 +49,7 @@
   };
 
   let records = loadRecords();
+  let quickAmounts = loadQuickAmounts();
   let lastAddedRecordId = null;
   let activeMerge = null;
 
@@ -95,6 +101,45 @@
 
   function saveRecords() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  function normalizeQuickAmounts(value) {
+    if (!Array.isArray(value) || value.length !== DEFAULT_QUICK_AMOUNTS.length) return null;
+    const amounts = value.map(Number);
+    if (amounts.some((amount) => !Number.isInteger(amount) || amount <= 0 || amount > MAX_AMOUNT)) return null;
+    if (new Set(amounts).size !== amounts.length) return null;
+    return amounts;
+  }
+
+  function loadQuickAmounts() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(QUICK_AMOUNTS_KEY));
+      return normalizeQuickAmounts(stored) ?? [...DEFAULT_QUICK_AMOUNTS];
+    } catch (error) {
+      console.warn("クイック金額設定を読み込めませんでした。", error);
+      return [...DEFAULT_QUICK_AMOUNTS];
+    }
+  }
+
+  function saveQuickAmounts() {
+    localStorage.setItem(QUICK_AMOUNTS_KEY, JSON.stringify(quickAmounts));
+  }
+
+  function renderQuickAmounts() {
+    const buttons = elements.amountButtons.querySelectorAll("[data-quick-index][data-kind]");
+    for (const button of buttons) {
+      const index = Number(button.dataset.quickIndex);
+      const amount = quickAmounts[index];
+      if (!Number.isInteger(amount)) continue;
+      const signedAmount = button.dataset.kind === "expense" ? -amount : amount;
+      button.dataset.amount = String(signedAmount);
+      button.textContent = `${signedAmount < 0 ? "−" : "＋"}${formatAmount(amount)}円`;
+    }
+
+    for (const input of elements.quickAmountInputs) {
+      const index = Number(input.dataset.quickSetting);
+      if (Number.isInteger(quickAmounts[index])) input.value = String(quickAmounts[index]);
+    }
   }
 
   function resetMergeWindow() {
@@ -461,6 +506,30 @@
     elements.customEntry.reset();
   }
 
+  function handleQuickSettingsSubmit(event) {
+    event.preventDefault();
+    const values = elements.quickAmountInputs.map((input) => Number(input.value));
+    const normalized = normalizeQuickAmounts(values);
+    if (!normalized) {
+      announce(`クイック金額は1〜${formatAmount(MAX_AMOUNT)}円の異なる整数を4つ入力してください。`);
+      return;
+    }
+
+    quickAmounts = normalized;
+    saveQuickAmounts();
+    resetMergeWindow();
+    renderQuickAmounts();
+    announce("クイック金額を保存しました。");
+  }
+
+  function resetQuickAmounts() {
+    quickAmounts = [...DEFAULT_QUICK_AMOUNTS];
+    saveQuickAmounts();
+    resetMergeWindow();
+    renderQuickAmounts();
+    announce("クイック金額を初期値に戻しました。");
+  }
+
   function handleRecentAction(event) {
     const button = event.target.closest("[data-action]");
     const item = event.target.closest("[data-id]");
@@ -573,6 +642,8 @@
   elements.amountButtons.addEventListener("click", handleQuickAmountClick);
   elements.customToggle.addEventListener("click", toggleCustomEntry);
   elements.customEntry.addEventListener("submit", handleCustomSubmit);
+  elements.quickSettings.addEventListener("submit", handleQuickSettingsSubmit);
+  elements.resetQuickAmountsButton.addEventListener("click", resetQuickAmounts);
   elements.undoButton.addEventListener("click", undoLastRecord);
   elements.addNoteButton.addEventListener("click", addNoteToLastRecord);
   elements.recentRecords.addEventListener("click", handleRecentAction);
@@ -585,6 +656,7 @@
   });
   elements.resetButton.addEventListener("click", clearRecords);
 
+  renderQuickAmounts();
   render();
   registerServiceWorker();
 })();
