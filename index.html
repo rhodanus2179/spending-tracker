@@ -1,178 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>無駄遣い・回避記録アプリ</title>
-<link rel="manifest" href="manifest.json">
-<style>
-  body {
-    font-family: sans-serif;
-    text-align: center;
-    background-color: #f5f5f5;
-    margin: 0;
-    padding: 2em;
-  }
-  h1 { color: #00897b; }
-  .summary {
-    background: white;
-    border-radius: 10px;
-    padding: 1em;
-    margin-bottom: 1em;
-    box-shadow: 0 0 5px rgba(0,0,0,0.1);
-  }
-  .button-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5em;
-    max-width: 300px;
-    margin: 0 auto;
-  }
-  .button-grid button {
-    padding: 0.5em;
-    font-size: 1em;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    touch-action: manipulation;
-  }
-  .button-grid .minus { background: #ff8a80; }
-  .button-grid .plus { background: #80cbc4; }
-  .balance {
-    margin-top: 1em;
-    font-size: 1.5em;
-    font-weight: bold;
-  }
-  #resetBtn {
-    margin-top: 0.5em;
-    background: #ccc;
-    border: none;
-    padding: 0.5em 1em;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#00897b">
+  <meta name="description" content="無駄遣いと回避できた支出を、端末内だけで手軽に記録するPWAです。">
+  <title>無駄遣い・回避記録</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/favicon.ico">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
-  <h1>無駄遣い・回避記録</h1>
+  <main class="app-shell">
+    <header class="app-header">
+      <p class="eyebrow">SPENDING TRACKER</p>
+      <h1>無駄遣い・回避記録</h1>
+      <p class="description">使ってしまった額はマイナス、回避できた額はプラスで記録します。</p>
+    </header>
 
-  <div class="summary">
-    <p>日合計: <span id="dayTotal">0</span> 円</p>
-    <p>週合計: <span id="weekTotal">0</span> 円</p>
-    <p>月合計: <span id="monthTotal">0</span> 円</p>
-  </div>
+    <section class="summary-card" aria-labelledby="summary-title">
+      <div class="summary-heading">
+        <h2 id="summary-title">集計</h2>
+        <p class="balance-label">累計残高</p>
+        <p class="balance-value"><span id="balance">0</span><span class="unit">円</span></p>
+      </div>
 
-  <div class="button-grid">
-    <button class="minus" onclick="addRecord(-150)">-150円</button>
-    <button class="plus" onclick="addRecord(150)">+150円</button>
-    <button class="minus" onclick="addRecord(-300)">-300円</button>
-    <button class="plus" onclick="addRecord(300)">+300円</button>
-    <button class="minus" onclick="addRecord(-1000)">-1000円</button>
-    <button class="plus" onclick="addRecord(1000)">+1000円</button>
-    <button class="minus" onclick="addRecord(-4000)">-4000円</button>
-    <button class="plus" onclick="addRecord(4000)">+4000円</button>
-  </div>
+      <dl class="summary-grid">
+        <div class="summary-item">
+          <dt>今日</dt>
+          <dd><span id="dayTotal">0</span> 円</dd>
+          <span id="dayRange" class="range-label"></span>
+        </div>
+        <div class="summary-item">
+          <dt>今週</dt>
+          <dd><span id="weekTotal">0</span> 円</dd>
+          <span id="weekRange" class="range-label"></span>
+        </div>
+        <div class="summary-item">
+          <dt>今月</dt>
+          <dd><span id="monthTotal">0</span> 円</dd>
+          <span id="monthRange" class="range-label"></span>
+        </div>
+        <div class="summary-item">
+          <dt>今年</dt>
+          <dd><span id="yearTotal">0</span> 円</dd>
+          <span id="yearRange" class="range-label"></span>
+        </div>
+      </dl>
+    </section>
 
-  <div class="balance">
-    残高: <span id="balance">0</span> 円
-  </div>
-  <button id="resetBtn" onclick="resetBalance()">残高リセット</button>
+    <section class="entry-card" aria-labelledby="entry-title">
+      <div class="section-heading">
+        <h2 id="entry-title">記録する</h2>
+        <p>左が無駄遣い、右が回避できた支出です。</p>
+      </div>
 
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js');
-  }
+      <div id="amountButtons" class="button-grid">
+        <button class="amount-button expense" type="button" data-amount="-150">−150円</button>
+        <button class="amount-button saving" type="button" data-amount="150">＋150円</button>
+        <button class="amount-button expense" type="button" data-amount="-300">−300円</button>
+        <button class="amount-button saving" type="button" data-amount="300">＋300円</button>
+        <button class="amount-button expense" type="button" data-amount="-1000">−1,000円</button>
+        <button class="amount-button saving" type="button" data-amount="1000">＋1,000円</button>
+        <button class="amount-button expense" type="button" data-amount="-4000">−4,000円</button>
+        <button class="amount-button saving" type="button" data-amount="4000">＋4,000円</button>
+      </div>
+    </section>
 
-  const balanceEl = document.getElementById('balance');
-  const dayEl = document.getElementById('dayTotal');
-  const weekEl = document.getElementById('weekTotal');
-  const monthEl = document.getElementById('monthTotal');
+    <section class="maintenance" aria-label="データ管理">
+      <button id="resetButton" class="reset-button" type="button">すべての記録を削除</button>
+      <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+    </section>
+  </main>
 
-  let data = JSON.parse(localStorage.getItem('spendingData')) || {
-    records: [],
-    balance: 0
-  };
-
-  function saveData() {
-    localStorage.setItem('spendingData', JSON.stringify(data));
-  }
-
-  function addRecord(amount) {
-    const now = new Date();
-    data.records.push({ amount, date: now.toISOString() });
-    data.balance += amount;
-    saveData();
-    updateDisplay();
-  }
-
-  function resetBalance() {
-    if (confirm('残高をリセットしますか？')) {
-      data.balance = 0;
-      data.records = [];
-      saveData();
-      updateDisplay();
-    }
-  }
-
-  function sumSince(startDate) {
-    return data.records
-      .filter(r => new Date(r.date) >= startDate)
-      .reduce((sum, r) => sum + r.amount, 0);
-  }
-
-  function formatDate(date) {
-    return `${date.getMonth() + 1}/${date.getDate()}`;
-  }
-
-  function updateDisplay() {
-    const now = new Date();
-
-    // 日・週・月・年の開始日
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-    const dayOfWeek = (now.getDay() + 6) % 7; // 月曜=0
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - dayOfWeek);
-    startOfWeek.setHours(0, 0, 0, 0);
-
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const startOfYear = new Date(now.getFullYear(), 0, 1);
-
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-    balanceEl.textContent = data.balance;
-    dayEl.textContent = sumSince(startOfDay);
-    weekEl.textContent = sumSince(startOfWeek);
-    monthEl.textContent = sumSince(startOfMonth);
-
-    // 年合計がまだなければ作成
-    if (!document.getElementById('yearTotal')) {
-      const summaryDiv = document.querySelector('.summary');
-      summaryDiv.insertAdjacentHTML('beforeend', `
-        <p>年合計: <span id="yearTotal">0</span> 円<br>
-        <small id="yearRange" style="color:#666"></small></p>
-      `);
-    }
-
-    document.getElementById('yearTotal').textContent = sumSince(startOfYear);
-
-    // 期間ラベルを追加
-    if (!document.getElementById('weekRange')) {
-      const weekP = weekEl.parentElement;
-      weekP.insertAdjacentHTML('beforeend', '<br><small id="weekRange" style="color:#666"></small>');
-    }
-    if (!document.getElementById('monthRange')) {
-      const monthP = monthEl.parentElement;
-      monthP.insertAdjacentHTML('beforeend', '<br><small id="monthRange" style="color:#666"></small>');
-    }
-
-    document.getElementById('weekRange').textContent = `(${formatDate(startOfWeek)}〜${formatDate(endOfWeek)})`;
-    document.getElementById('monthRange').textContent = `(${formatDate(startOfMonth)}〜${formatDate(now)})`;
-    document.getElementById('yearRange').textContent = `(${formatDate(startOfYear)}〜${formatDate(now)})`;
-  }
-
-  updateDisplay();
-</script>
+  <script src="./app.js" defer></script>
 </body>
 </html>

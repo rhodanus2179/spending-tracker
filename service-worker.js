@@ -1,42 +1,52 @@
-const CACHE_NAME = "spendapp-v1";
-const urlsToCache = [
+const CACHE_NAME = "spending-tracker-v2";
+const APP_SHELL = [
   "./",
   "./index.html",
+  "./styles.css",
+  "./app.js",
   "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./icons/android-chrome-192x192.png",
+  "./icons/android-chrome-512x512.png",
+  "./icons/apple-touch-icon.png",
+  "./icons/favicon.ico"
 ];
 
-// インストール時にキャッシュ登録
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache);
-    })
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
   self.skipWaiting();
 });
 
-// 有効化時に古いキャッシュ削除
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
+      const obsoleteCaches = cacheNames.filter((name) => name !== CACHE_NAME);
+      return Promise.all(obsoleteCaches.map((name) => caches.delete(name)));
     })
   );
   self.clients.claim();
 });
 
-// リクエスト取得時のキャッシュ対応
 self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
+
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      // キャッシュがあれば返し、なければネットワークから取得
-      return response || fetch(event.request).catch(() => caches.match("./index.html"));
+    caches.match(event.request).then((cachedResponse) => {
+      if (cachedResponse) return cachedResponse;
+
+      return fetch(event.request).then((networkResponse) => {
+        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type === "opaque") {
+          return networkResponse;
+        }
+
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+        return networkResponse;
+      }).catch(() => {
+        if (event.request.mode === "navigate") {
+          return caches.match("./index.html");
+        }
+        return Response.error();
+      });
     })
   );
 });

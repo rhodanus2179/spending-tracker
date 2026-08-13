@@ -1,0 +1,254 @@
+:root {
+  color-scheme: light;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f3f6f5;
+  color: #17332f;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(0, 137, 123, 0.09), transparent 24rem),
+    #f3f6f5;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-shell {
+  width: min(100% - 2rem, 42rem);
+  margin: 0 auto;
+  padding: 2rem 0 3rem;
+}
+
+.app-header {
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.4rem;
+  color: #00897b;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+h1,
+h2,
+p,
+dl,
+dd {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 0.55rem;
+  font-size: clamp(1.8rem, 7vw, 2.7rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+h2 {
+  margin-bottom: 0;
+  font-size: 1rem;
+}
+
+.description,
+.section-heading p {
+  color: #60716e;
+  line-height: 1.65;
+}
+
+.description {
+  margin-bottom: 0;
+}
+
+.summary-card,
+.entry-card {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(23, 51, 47, 0.08);
+  border-radius: 1.25rem;
+  box-shadow: 0 1rem 3rem rgba(15, 52, 47, 0.08);
+}
+
+.summary-card {
+  overflow: hidden;
+}
+
+.summary-heading {
+  padding: 1.4rem 1.4rem 1.15rem;
+  background: #0b766b;
+  color: #fff;
+}
+
+.balance-label {
+  margin: 1.6rem 0 0.3rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.8rem;
+}
+
+.balance-value {
+  margin: 0;
+  font-size: clamp(2.2rem, 11vw, 3.7rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.balance-value .unit {
+  margin-left: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: normal;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.summary-item {
+  min-width: 0;
+  padding: 1.1rem 1.2rem;
+  border-top: 1px solid #e5ecea;
+}
+
+.summary-item:nth-child(odd) {
+  border-right: 1px solid #e5ecea;
+}
+
+.summary-item dt {
+  margin-bottom: 0.35rem;
+  color: #71817e;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.summary-item dd {
+  margin-bottom: 0.25rem;
+  font-size: 1.12rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.range-label {
+  display: block;
+  min-height: 1.1rem;
+  color: #8b9996;
+  font-size: 0.72rem;
+}
+
+.entry-card {
+  margin-top: 1rem;
+  padding: 1.4rem;
+}
+
+.section-heading p {
+  margin: 0.4rem 0 1rem;
+  font-size: 0.9rem;
+}
+
+.button-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.amount-button,
+.reset-button {
+  min-height: 3.15rem;
+  border: 0;
+  border-radius: 0.9rem;
+  cursor: pointer;
+  font-weight: 800;
+  transition: transform 120ms ease, filter 120ms ease;
+  touch-action: manipulation;
+}
+
+.amount-button:active,
+.reset-button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.amount-button:focus-visible,
+.reset-button:focus-visible {
+  outline: 3px solid rgba(0, 137, 123, 0.32);
+  outline-offset: 3px;
+}
+
+.amount-button.expense {
+  background: #ffe2df;
+  color: #9b342a;
+}
+
+.amount-button.saving {
+  background: #d8f1ed;
+  color: #086e64;
+}
+
+.amount-button:hover,
+.reset-button:hover {
+  filter: brightness(0.97);
+}
+
+.maintenance {
+  padding: 1.25rem 0 0;
+  text-align: center;
+}
+
+.reset-button {
+  min-height: auto;
+  padding: 0.7rem 1rem;
+  background: transparent;
+  color: #6d7977;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.status-message {
+  min-height: 1.3rem;
+  margin: 0.5rem 0 0;
+  color: #60716e;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 24rem) {
+  .app-shell {
+    width: min(100% - 1rem, 42rem);
+    padding-top: 1.25rem;
+  }
+
+  .summary-heading,
+  .entry-card {
+    padding: 1.1rem;
+  }
+
+  .summary-item {
+    padding: 0.95rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
