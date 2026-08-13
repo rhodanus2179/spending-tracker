@@ -63,14 +63,14 @@
       </div>
 
       <div id="amountButtons" class="button-grid">
-        <button class="amount-button expense" type="button" data-amount="-150">−150円</button>
-        <button class="amount-button saving" type="button" data-amount="150">＋150円</button>
-        <button class="amount-button expense" type="button" data-amount="-300">−300円</button>
-        <button class="amount-button saving" type="button" data-amount="300">＋300円</button>
-        <button class="amount-button expense" type="button" data-amount="-1000">−1,000円</button>
-        <button class="amount-button saving" type="button" data-amount="1000">＋1,000円</button>
-        <button class="amount-button expense" type="button" data-amount="-4000">−4,000円</button>
-        <button class="amount-button saving" type="button" data-amount="4000">＋4,000円</button>
+        <button class="amount-button expense" type="button" data-quick-index="0" data-kind="expense" data-amount="-150">−150円</button>
+        <button class="amount-button saving" type="button" data-quick-index="0" data-kind="saving" data-amount="150">＋150円</button>
+        <button class="amount-button expense" type="button" data-quick-index="1" data-kind="expense" data-amount="-400">−400円</button>
+        <button class="amount-button saving" type="button" data-quick-index="1" data-kind="saving" data-amount="400">＋400円</button>
+        <button class="amount-button expense" type="button" data-quick-index="2" data-kind="expense" data-amount="-1000">−1,000円</button>
+        <button class="amount-button saving" type="button" data-quick-index="2" data-kind="saving" data-amount="1000">＋1,000円</button>
+        <button class="amount-button expense" type="button" data-quick-index="3" data-kind="expense" data-amount="-3000">−3,000円</button>
+        <button class="amount-button saving" type="button" data-quick-index="3" data-kind="saving" data-amount="3000">＋3,000円</button>
       </div>
 
       <button id="customToggle" class="custom-toggle" type="button" aria-expanded="false" aria-controls="customEntry">その他の金額</button>
@@ -88,6 +88,39 @@
         </div>
       </form>
     </section>
+
+    <details class="data-card">
+      <summary>クイック金額設定</summary>
+      <div class="data-content">
+        <p>4つの金額を自由に設定できます。設定はこの端末のブラウザに保存されます。</p>
+        <form id="quickSettings" class="custom-entry">
+          <label for="quickAmount1">ボタン1</label>
+          <div class="amount-input-wrap">
+            <input id="quickAmount1" data-quick-setting="0" type="number" min="1" max="100000000" step="1" inputmode="numeric" required>
+            <span>円</span>
+          </div>
+          <label for="quickAmount2">ボタン2</label>
+          <div class="amount-input-wrap">
+            <input id="quickAmount2" data-quick-setting="1" type="number" min="1" max="100000000" step="1" inputmode="numeric" required>
+            <span>円</span>
+          </div>
+          <label for="quickAmount3">ボタン3</label>
+          <div class="amount-input-wrap">
+            <input id="quickAmount3" data-quick-setting="2" type="number" min="1" max="100000000" step="1" inputmode="numeric" required>
+            <span>円</span>
+          </div>
+          <label for="quickAmount4">ボタン4</label>
+          <div class="amount-input-wrap">
+            <input id="quickAmount4" data-quick-setting="3" type="number" min="1" max="100000000" step="1" inputmode="numeric" required>
+            <span>円</span>
+          </div>
+          <div class="data-actions">
+            <button type="submit">設定を保存</button>
+            <button id="resetQuickAmountsButton" type="button">初期値に戻す</button>
+          </div>
+        </form>
+      </div>
+    </details>
 
     <section id="lastAction" class="last-action" aria-live="polite" hidden>
       <p id="lastActionMessage"></p>
