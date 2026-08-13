@@ -8,6 +8,7 @@
   const TREND_MONTHS = 6;
   const MAX_AMOUNT = 100_000_000;
   const MAX_NOTE_LENGTH = 200;
+  const MERGE_WINDOW_MS = 2_000;
   const numberFormat = new Intl.NumberFormat("ja-JP");
 
   const elements = {
@@ -44,6 +45,7 @@
 
   let records = loadRecords();
   let lastAddedRecordId = null;
+  let activeMerge = null;
 
   function createId() {
     if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
@@ -95,21 +97,75 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
   }
 
+  function resetMergeWindow() {
+    activeMerge = null;
+  }
+
+  function isSameLocalDay(dateA, dateB) {
+    return dateA.getFullYear() === dateB.getFullYear()
+      && dateA.getMonth() === dateB.getMonth()
+      && dateA.getDate() === dateB.getDate();
+  }
+
+  function getMergeTarget(candidate, now) {
+    if (!activeMerge || now.getTime() - activeMerge.lastInputAt > MERGE_WINDOW_MS) return null;
+
+    const record = records.find((item) => item.id === activeMerge.recordId);
+    if (!record) return null;
+    if (!isSameLocalDay(new Date(record.createdAt), now)) return null;
+    if (record.note && candidate.note && record.note !== candidate.note) return null;
+
+    const mergedAmount = record.amount + candidate.amount;
+    if (Math.abs(mergedAmount) > MAX_AMOUNT) return null;
+
+    return { record, mergedAmount, mergedNote: candidate.note || record.note };
+  }
+
   function addRecord(amount, note = "") {
-    const record = normalizeRecord({
+    const now = new Date();
+    const candidate = normalizeRecord({
       id: createId(),
       amount,
-      createdAt: new Date().toISOString(),
+      createdAt: now.toISOString(),
       note
     });
-    if (!record) return;
+    if (!candidate) return;
 
-    records.push(record);
-    lastAddedRecordId = record.id;
+    const mergeTarget = getMergeTarget(candidate, now);
+    if (mergeTarget) {
+      if (mergeTarget.mergedAmount === 0) {
+        records = records.filter((item) => item.id !== mergeTarget.record.id);
+        saveRecords();
+        render();
+        hideLastAction();
+        announce("連続入力の合計が0円になったため、記録を取り消しました。");
+        return;
+      }
+
+      mergeTarget.record.amount = mergeTarget.mergedAmount;
+      mergeTarget.record.note = mergeTarget.mergedNote;
+      lastAddedRecordId = mergeTarget.record.id;
+      activeMerge = {
+        recordId: mergeTarget.record.id,
+        lastInputAt: now.getTime()
+      };
+      saveRecords();
+      render();
+      showLastAction(mergeTarget.record);
+      announce(`連続入力を合算して${formatSignedAmount(mergeTarget.record.amount)}円を記録しました。`);
+      return;
+    }
+
+    records.push(candidate);
+    lastAddedRecordId = candidate.id;
+    activeMerge = {
+      recordId: candidate.id,
+      lastInputAt: now.getTime()
+    };
     saveRecords();
     render();
-    showLastAction(record);
-    announce(`${formatSignedAmount(record.amount)}円を記録しました。`);
+    showLastAction(candidate);
+    announce(`${formatSignedAmount(candidate.amount)}円を記録しました。`);
   }
 
   function deleteRecord(id, { confirmDelete = true } = {}) {
@@ -120,6 +176,7 @@
     }
 
     records = records.filter((item) => item.id !== id);
+    if (activeMerge?.recordId === id) resetMergeWindow();
     if (lastAddedRecordId === id) hideLastAction();
     saveRecords();
     render();
@@ -135,6 +192,7 @@
     }
 
     const amount = record.amount;
+    resetMergeWindow();
     deleteRecord(record.id, { confirmDelete: false });
     announce(`${formatSignedAmount(amount)}円の記録を取り消しました。`);
   }
@@ -142,12 +200,15 @@
   function editNote(id) {
     const record = records.find((item) => item.id === id);
     if (!record) return;
+    resetMergeWindow();
+
     const input = window.prompt("メモを入力してください（空欄で削除）", record.note);
     if (input === null) return;
 
     record.note = input.trim().slice(0, MAX_NOTE_LENGTH);
     saveRecords();
     renderRecentRecords();
+    if (lastAddedRecordId === id) showLastAction(record);
     announce(record.note ? "メモを保存しました。" : "メモを削除しました。");
   }
 
@@ -164,7 +225,6 @@
     if (!window.confirm("すべての記録を削除しますか？この操作は元に戻せません。")) return;
 
     records = [];
-    lastAddedRecordId = null;
     saveRecords();
     render();
     hideLastAction();
@@ -366,6 +426,7 @@
 
   function hideLastAction() {
     lastAddedRecordId = null;
+    resetMergeWindow();
     elements.lastAction.hidden = true;
   }
 
@@ -404,6 +465,8 @@
     const button = event.target.closest("[data-action]");
     const item = event.target.closest("[data-id]");
     if (!button || !item) return;
+
+    resetMergeWindow();
     if (button.dataset.action === "note") editNote(item.dataset.id);
     if (button.dataset.action === "delete" && deleteRecord(item.dataset.id)) {
       announce("記録を削除しました。");
