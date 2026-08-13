@@ -1,4 +1,4 @@
-const CACHE_NAME = "spending-tracker-v2";
+const CACHE_NAME = "spending-tracker-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -18,10 +18,11 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      const obsoleteCaches = cacheNames.filter((name) => name !== CACHE_NAME);
-      return Promise.all(obsoleteCaches.map((name) => caches.delete(name)));
-    })
+    caches.keys().then((cacheNames) => Promise.all(
+      cacheNames
+        .filter((name) => name.startsWith("spending-tracker-") && name !== CACHE_NAME)
+        .map((name) => caches.delete(name))
+    ))
   );
   self.clients.claim();
 });
@@ -29,23 +30,25 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
 
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => response)
+        .catch(() => caches.match("./index.html"))
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) return cachedResponse;
-
       return fetch(event.request).then((networkResponse) => {
         if (!networkResponse || networkResponse.status !== 200 || networkResponse.type === "opaque") {
           return networkResponse;
         }
-
         const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
         return networkResponse;
-      }).catch(() => {
-        if (event.request.mode === "navigate") {
-          return caches.match("./index.html");
-        }
-        return Response.error();
       });
     })
   );
