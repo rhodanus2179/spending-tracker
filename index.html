@@ -16,36 +16,42 @@
     <header class="app-header">
       <p class="eyebrow">SPENDING TRACKER</p>
       <h1>無駄遣い・回避記録</h1>
-      <p class="description">使ってしまった額はマイナス、回避できた額はプラスで記録します。</p>
+      <p class="description">使ってしまった額と、使わずに済んだ額をワンタップで残します。</p>
     </header>
 
     <section class="summary-card" aria-labelledby="summary-title">
       <div class="summary-heading">
-        <h2 id="summary-title">集計</h2>
-        <p class="balance-label">累計残高</p>
-        <p class="balance-value"><span id="balance">0</span><span class="unit">円</span></p>
+        <div>
+          <h2 id="summary-title">今月の差引効果</h2>
+          <p id="monthRange" class="summary-period"></p>
+        </div>
+        <p class="balance-value"><span id="monthNet">0</span><span class="unit">円</span></p>
+        <div class="split-totals" aria-label="今月の内訳">
+          <p><span class="split-label expense-text">無駄遣い</span><strong id="monthExpense">0円</strong></p>
+          <p><span class="split-label saving-text">回避</span><strong id="monthSaving">0円</strong></p>
+        </div>
       </div>
 
       <dl class="summary-grid">
         <div class="summary-item">
           <dt>今日</dt>
-          <dd><span id="dayTotal">0</span> 円</dd>
+          <dd><span id="dayNet">0</span> 円</dd>
           <span id="dayRange" class="range-label"></span>
         </div>
         <div class="summary-item">
           <dt>今週</dt>
-          <dd><span id="weekTotal">0</span> 円</dd>
+          <dd><span id="weekNet">0</span> 円</dd>
           <span id="weekRange" class="range-label"></span>
         </div>
         <div class="summary-item">
-          <dt>今月</dt>
-          <dd><span id="monthTotal">0</span> 円</dd>
-          <span id="monthRange" class="range-label"></span>
+          <dt>今年</dt>
+          <dd><span id="yearNet">0</span> 円</dd>
+          <span id="yearRange" class="range-label"></span>
         </div>
         <div class="summary-item">
-          <dt>今年</dt>
-          <dd><span id="yearTotal">0</span> 円</dd>
-          <span id="yearRange" class="range-label"></span>
+          <dt>累計</dt>
+          <dd><span id="allNet">0</span> 円</dd>
+          <span class="range-label">全記録</span>
         </div>
       </dl>
     </section>
@@ -66,12 +72,65 @@
         <button class="amount-button expense" type="button" data-amount="-4000">−4,000円</button>
         <button class="amount-button saving" type="button" data-amount="4000">＋4,000円</button>
       </div>
+
+      <button id="customToggle" class="custom-toggle" type="button" aria-expanded="false" aria-controls="customEntry">その他の金額</button>
+      <form id="customEntry" class="custom-entry" hidden>
+        <label for="customAmount">金額</label>
+        <div class="amount-input-wrap">
+          <input id="customAmount" name="amount" type="number" min="1" max="100000000" step="1" inputmode="numeric" autocomplete="off" placeholder="例: 750" required>
+          <span>円</span>
+        </div>
+        <label for="customNote">メモ <span class="optional">任意</span></label>
+        <input id="customNote" name="note" type="text" maxlength="200" autocomplete="off" placeholder="例: コンビニに寄らなかった">
+        <div class="custom-actions">
+          <button class="custom-submit expense" type="submit" data-kind="expense">無駄遣いとして記録</button>
+          <button class="custom-submit saving" type="submit" data-kind="saving">回避として記録</button>
+        </div>
+      </form>
     </section>
 
-    <section class="maintenance" aria-label="データ管理">
-      <button id="resetButton" class="reset-button" type="button">すべての記録を削除</button>
-      <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+    <section id="lastAction" class="last-action" aria-live="polite" hidden>
+      <p id="lastActionMessage"></p>
+      <div class="last-action-buttons">
+        <button id="addNoteButton" type="button">メモを追加</button>
+        <button id="undoButton" type="button">取り消す</button>
+      </div>
     </section>
+
+    <section class="records-card" aria-labelledby="records-title">
+      <div class="section-heading section-heading-row">
+        <div>
+          <h2 id="records-title">最近の記録</h2>
+          <p>直近10件。メモの編集や誤入力の削除ができます。</p>
+        </div>
+      </div>
+      <p id="emptyRecords" class="empty-state">まだ記録がありません。</p>
+      <ol id="recentRecords" class="record-list"></ol>
+    </section>
+
+    <section class="trend-card" aria-labelledby="trend-title">
+      <div class="section-heading">
+        <h2 id="trend-title">月ごとの差引</h2>
+        <p>直近6か月の差引効果です。</p>
+      </div>
+      <div id="monthlyTrend" class="trend-list"></div>
+    </section>
+
+    <details class="data-card">
+      <summary>データ管理</summary>
+      <div class="data-content">
+        <p>記録はこの端末のブラウザ内だけに保存されます。</p>
+        <div class="data-actions">
+          <button id="exportJsonButton" type="button">JSONバックアップ</button>
+          <button id="exportCsvButton" type="button">CSVを書き出す</button>
+          <button id="importButton" type="button">バックアップを復元</button>
+          <input id="importFile" type="file" accept="application/json,.json" hidden>
+          <button id="resetButton" class="danger-button" type="button">すべての記録を削除</button>
+        </div>
+      </div>
+    </details>
+
+    <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
   </main>
 
   <script src="./app.js" defer></script>
