@@ -13,11 +13,48 @@
 </head>
 <body>
   <main class="app-shell">
-    <header class="app-header">
-      <p class="eyebrow">SPENDING TRACKER</p>
-      <h1>無駄遣い・回避記録</h1>
-      <p class="description">使ってしまった額と、使わずに済んだ額をワンタップで残します。</p>
-    </header>
+    <h1 class="visually-hidden">無駄遣い・回避記録</h1>
+
+    <section class="entry-card entry-card-primary" aria-labelledby="entry-title">
+      <div class="section-heading">
+        <h2 id="entry-title">記録する</h2>
+        <p>左が無駄遣い、右が回避できた支出です。</p>
+      </div>
+
+      <div id="amountButtons" class="button-grid">
+        <button class="amount-button expense" type="button" data-quick-index="0" data-kind="expense" data-amount="-150">−150円</button>
+        <button class="amount-button saving" type="button" data-quick-index="0" data-kind="saving" data-amount="150">＋150円</button>
+        <button class="amount-button expense" type="button" data-quick-index="1" data-kind="expense" data-amount="-400">−400円</button>
+        <button class="amount-button saving" type="button" data-quick-index="1" data-kind="saving" data-amount="400">＋400円</button>
+        <button class="amount-button expense" type="button" data-quick-index="2" data-kind="expense" data-amount="-1000">−1,000円</button>
+        <button class="amount-button saving" type="button" data-quick-index="2" data-kind="saving" data-amount="1000">＋1,000円</button>
+        <button class="amount-button expense" type="button" data-quick-index="3" data-kind="expense" data-amount="-3000">−3,000円</button>
+        <button class="amount-button saving" type="button" data-quick-index="3" data-kind="saving" data-amount="3000">＋3,000円</button>
+      </div>
+
+      <button id="customToggle" class="custom-toggle" type="button" aria-expanded="false" aria-controls="customEntry">その他の金額</button>
+      <form id="customEntry" class="custom-entry" hidden>
+        <label for="customAmount">金額</label>
+        <div class="amount-input-wrap">
+          <input id="customAmount" name="amount" type="number" min="1" max="100000000" step="1" inputmode="numeric" autocomplete="off" placeholder="例: 750" required>
+          <span>円</span>
+        </div>
+        <label for="customNote">メモ <span class="optional">任意</span></label>
+        <input id="customNote" name="note" type="text" maxlength="200" autocomplete="off" placeholder="例: コンビニに寄らなかった">
+        <div class="custom-actions">
+          <button class="custom-submit expense" type="submit" data-kind="expense">無駄遣いとして記録</button>
+          <button class="custom-submit saving" type="submit" data-kind="saving">回避として記録</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="lastAction" class="last-action" aria-live="polite" hidden>
+      <p id="lastActionMessage"></p>
+      <div class="last-action-buttons">
+        <button id="addNoteButton" type="button">メモを追加</button>
+        <button id="undoButton" type="button">取り消す</button>
+      </div>
+    </section>
 
     <section class="summary-card" aria-labelledby="summary-title">
       <div class="summary-heading">
@@ -56,39 +93,6 @@
       </dl>
     </section>
 
-    <section class="entry-card" aria-labelledby="entry-title">
-      <div class="section-heading">
-        <h2 id="entry-title">記録する</h2>
-        <p>左が無駄遣い、右が回避できた支出です。</p>
-      </div>
-
-      <div id="amountButtons" class="button-grid">
-        <button class="amount-button expense" type="button" data-quick-index="0" data-kind="expense" data-amount="-150">−150円</button>
-        <button class="amount-button saving" type="button" data-quick-index="0" data-kind="saving" data-amount="150">＋150円</button>
-        <button class="amount-button expense" type="button" data-quick-index="1" data-kind="expense" data-amount="-400">−400円</button>
-        <button class="amount-button saving" type="button" data-quick-index="1" data-kind="saving" data-amount="400">＋400円</button>
-        <button class="amount-button expense" type="button" data-quick-index="2" data-kind="expense" data-amount="-1000">−1,000円</button>
-        <button class="amount-button saving" type="button" data-quick-index="2" data-kind="saving" data-amount="1000">＋1,000円</button>
-        <button class="amount-button expense" type="button" data-quick-index="3" data-kind="expense" data-amount="-3000">−3,000円</button>
-        <button class="amount-button saving" type="button" data-quick-index="3" data-kind="saving" data-amount="3000">＋3,000円</button>
-      </div>
-
-      <button id="customToggle" class="custom-toggle" type="button" aria-expanded="false" aria-controls="customEntry">その他の金額</button>
-      <form id="customEntry" class="custom-entry" hidden>
-        <label for="customAmount">金額</label>
-        <div class="amount-input-wrap">
-          <input id="customAmount" name="amount" type="number" min="1" max="100000000" step="1" inputmode="numeric" autocomplete="off" placeholder="例: 750" required>
-          <span>円</span>
-        </div>
-        <label for="customNote">メモ <span class="optional">任意</span></label>
-        <input id="customNote" name="note" type="text" maxlength="200" autocomplete="off" placeholder="例: コンビニに寄らなかった">
-        <div class="custom-actions">
-          <button class="custom-submit expense" type="submit" data-kind="expense">無駄遣いとして記録</button>
-          <button class="custom-submit saving" type="submit" data-kind="saving">回避として記録</button>
-        </div>
-      </form>
-    </section>
-
     <details class="data-card">
       <summary>クイック金額設定</summary>
       <div class="data-content">
@@ -121,14 +125,6 @@
         </form>
       </div>
     </details>
-
-    <section id="lastAction" class="last-action" aria-live="polite" hidden>
-      <p id="lastActionMessage"></p>
-      <div class="last-action-buttons">
-        <button id="addNoteButton" type="button">メモを追加</button>
-        <button id="undoButton" type="button">取り消す</button>
-      </div>
-    </section>
 
     <section class="records-card" aria-labelledby="records-title">
       <div class="section-heading section-heading-row">
