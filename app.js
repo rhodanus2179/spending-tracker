@@ -36,6 +36,14 @@
     lastAction: document.querySelector("#lastAction"),
     lastActionMessage: document.querySelector("#lastActionMessage"),
     addNoteButton: document.querySelector("#addNoteButton"),
+    noteDialog: document.querySelector("#noteDialog"),
+    noteForm: document.querySelector("#noteForm"),
+    noteDialogTitle: document.querySelector("#noteDialogTitle"),
+    noteDialogClose: document.querySelector("#noteDialogClose"),
+    noteCancelButton: document.querySelector("#noteCancelButton"),
+    recentNoteSection: document.querySelector("#recentNoteSection"),
+    recentNoteSuggestions: document.querySelector("#recentNoteSuggestions"),
+    noteInput: document.querySelector("#noteInput"),
     undoButton: document.querySelector("#undoButton"),
     recentRecords: document.querySelector("#recentRecords"),
     emptyRecords: document.querySelector("#emptyRecords"),
@@ -52,6 +60,7 @@
   let quickAmounts = loadQuickAmounts();
   let lastAddedRecordId = null;
   let activeMerge = null;
+  let editingNoteRecordId = null;
 
   function createId() {
     if (globalThis.crypto?.randomUUID) return crypto.randomUUID();
@@ -242,19 +251,98 @@
     announce(`${formatSignedAmount(amount)}円の記録を取り消しました。`);
   }
 
+  function getRecentUniqueNotes(limit = 4) {
+    const notes = [];
+    const seen = new Set();
+    const recentRecords = [...records].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+
+    for (const record of recentRecords) {
+      const note = record.note.trim();
+      if (!note || seen.has(note)) continue;
+      seen.add(note);
+      notes.push(note);
+      if (notes.length >= limit) break;
+    }
+
+    return notes;
+  }
+
+  function renderRecentNoteSuggestions() {
+    elements.recentNoteSuggestions.replaceChildren();
+    const notes = getRecentUniqueNotes();
+    elements.recentNoteSection.hidden = notes.length === 0;
+
+    for (const note of notes) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "note-suggestion";
+      button.dataset.note = note;
+      button.setAttribute("aria-pressed", "false");
+      button.textContent = note;
+      elements.recentNoteSuggestions.append(button);
+    }
+  }
+
   function editNote(id) {
     const record = records.find((item) => item.id === id);
     if (!record) return;
     resetMergeWindow();
 
-    const input = window.prompt("メモを入力してください（空欄で削除）", record.note);
-    if (input === null) return;
+    editingNoteRecordId = id;
+    elements.noteDialogTitle.textContent = record.note ? "メモを編集" : "メモを追加";
+    elements.noteInput.value = record.note;
+    renderRecentNoteSuggestions();
+    elements.noteDialog.showModal();
 
-    record.note = input.trim().slice(0, MAX_NOTE_LENGTH);
+    requestAnimationFrame(() => {
+      const firstSuggestion = elements.recentNoteSuggestions.querySelector(".note-suggestion");
+      if (firstSuggestion) firstSuggestion.focus();
+      else elements.noteInput.focus();
+    });
+  }
+
+  function closeNoteDialog() {
+    if (elements.noteDialog.open) elements.noteDialog.close();
+  }
+
+  function handleNoteDialogClose() {
+    editingNoteRecordId = null;
+    elements.noteForm.reset();
+    elements.recentNoteSuggestions.replaceChildren();
+    elements.recentNoteSection.hidden = true;
+  }
+
+  function handleNoteSuggestionClick(event) {
+    const button = event.target.closest(".note-suggestion");
+    if (!button) return;
+
+    for (const suggestion of elements.recentNoteSuggestions.querySelectorAll(".note-suggestion")) {
+      suggestion.setAttribute("aria-pressed", String(suggestion === button));
+    }
+    elements.noteInput.value = button.dataset.note ?? "";
+  }
+
+  function clearNoteSuggestionSelection() {
+    for (const suggestion of elements.recentNoteSuggestions.querySelectorAll(".note-suggestion")) {
+      suggestion.setAttribute("aria-pressed", "false");
+    }
+  }
+
+  function handleNoteSubmit(event) {
+    event.preventDefault();
+    const record = records.find((item) => item.id === editingNoteRecordId);
+    if (!record) {
+      closeNoteDialog();
+      return;
+    }
+
+    record.note = elements.noteInput.value.trim().slice(0, MAX_NOTE_LENGTH);
     saveRecords();
     renderRecentRecords();
-    if (lastAddedRecordId === id) showLastAction(record);
-    announce(record.note ? "メモを保存しました。" : "メモを削除しました。");
+    if (lastAddedRecordId === record.id) showLastAction(record);
+    const message = record.note ? "メモを保存しました。" : "メモを削除しました。";
+    closeNoteDialog();
+    announce(message);
   }
 
   function addNoteToLastRecord() {
@@ -646,6 +734,12 @@
   elements.resetQuickAmountsButton.addEventListener("click", resetQuickAmounts);
   elements.undoButton.addEventListener("click", undoLastRecord);
   elements.addNoteButton.addEventListener("click", addNoteToLastRecord);
+  elements.noteForm.addEventListener("submit", handleNoteSubmit);
+  elements.noteDialogClose.addEventListener("click", closeNoteDialog);
+  elements.noteCancelButton.addEventListener("click", closeNoteDialog);
+  elements.noteDialog.addEventListener("close", handleNoteDialogClose);
+  elements.recentNoteSuggestions.addEventListener("click", handleNoteSuggestionClick);
+  elements.noteInput.addEventListener("input", clearNoteSuggestionSelection);
   elements.recentRecords.addEventListener("click", handleRecentAction);
   elements.exportJsonButton.addEventListener("click", exportJson);
   elements.exportCsvButton.addEventListener("click", exportCsv);
