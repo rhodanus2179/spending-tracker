@@ -277,6 +277,99 @@ h2 { margin-bottom: 0; font-size: 1rem; }
 .data-actions .danger-button { background: #fff1ef; color: #98443b; }
 .status-message { min-height: 1.3rem; margin: 0.7rem 0 0; color: #60716e; text-align: center; font-size: 0.8rem; }
 
+.note-dialog {
+  width: min(calc(100% - 2rem), 32rem);
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-radius: 1.25rem;
+  background: #fff;
+  color: #17332f;
+  box-shadow: 0 1.5rem 5rem rgba(5, 34, 30, 0.28);
+}
+.note-dialog::backdrop {
+  background: rgba(9, 38, 34, 0.48);
+  backdrop-filter: blur(2px);
+}
+.note-dialog-form { padding: 1.2rem; }
+.note-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.note-dialog-header h2 { font-size: 1.08rem; }
+.note-dialog-close {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #edf3f1;
+  color: #526a65;
+  cursor: pointer;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.recent-note-section { margin-bottom: 1rem; }
+.note-dialog-label {
+  display: block;
+  margin: 0 0 0.45rem;
+  color: #526a65;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+.note-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.note-suggestion {
+  max-width: 100%;
+  padding: 0.58rem 0.75rem;
+  border: 1px solid #c9ded9;
+  border-radius: 999px;
+  background: #edf8f5;
+  color: #1f6258;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.note-suggestion:hover { filter: brightness(0.98); }
+.note-suggestion:active { transform: translateY(1px); }
+.note-input {
+  width: 100%;
+  padding: 0.78rem 0.85rem;
+  border: 1px solid #cfdad7;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #17332f;
+}
+.note-dialog-help {
+  margin: 0.45rem 0 1rem;
+  color: #899894;
+  font-size: 0.74rem;
+}
+.note-dialog-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+.note-dialog-actions button {
+  min-height: 2.85rem;
+  border: 0;
+  border-radius: 0.85rem;
+  cursor: pointer;
+  font-weight: 800;
+}
+#noteCancelButton { background: #edf3f1; color: #526a65; }
+.note-save-button { background: #0b766b; color: #fff; }
+
 @media (max-width: 30rem) {
   .last-action { align-items: flex-start; flex-direction: column; }
   .record-item { grid-template-columns: auto minmax(0, 1fr); }
@@ -292,6 +385,7 @@ h2 { margin-bottom: 0; font-size: 1rem; }
   .entry-card, .summary-heading, .records-card, .trend-card { padding: 1rem; }
   .summary-item { padding: 0.95rem; }
   .split-totals, .custom-actions, .data-actions { grid-template-columns: 1fr; }
+  .note-dialog { width: min(calc(100% - 1rem), 32rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {
