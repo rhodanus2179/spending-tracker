@@ -162,6 +162,29 @@
     <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
   </main>
 
+  <dialog id="noteDialog" class="note-dialog" aria-labelledby="noteDialogTitle">
+    <form id="noteForm" class="note-dialog-form">
+      <div class="note-dialog-header">
+        <h2 id="noteDialogTitle">メモを追加</h2>
+        <button id="noteDialogClose" class="note-dialog-close" type="button" aria-label="メモ入力を閉じる">×</button>
+      </div>
+
+      <div id="recentNoteSection" class="recent-note-section" hidden>
+        <p class="note-dialog-label">最近使ったメモ</p>
+        <div id="recentNoteSuggestions" class="note-suggestions" aria-label="最近使ったメモの候補"></div>
+      </div>
+
+      <label class="note-dialog-label" for="noteInput">メモ</label>
+      <input id="noteInput" class="note-input" type="text" maxlength="200" autocomplete="off" placeholder="メモを入力">
+      <p class="note-dialog-help">空欄で保存するとメモを削除します。</p>
+
+      <div class="note-dialog-actions">
+        <button id="noteCancelButton" type="button">キャンセル</button>
+        <button class="note-save-button" type="submit">保存</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="./app.js" defer></script>
 </body>
 </html>
