@@ -75,4 +75,4 @@ python -m http.server 8000
 
 ## ライセンス
 
-MIT License
+no license
