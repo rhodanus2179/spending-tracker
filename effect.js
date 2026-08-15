@@ -4,7 +4,7 @@
   const STORAGE_KEY = "spending-tracker.records.v3";
   const MERGE_WINDOW_MS = 2_000;
   const MAX_ACTIVE_EFFECTS = 2;
-  const PARTICLE_COUNT = 12;
+  const PARTICLE_COUNT = 28;
 
   const elements = {
     amountButtons: document.querySelector("#amountButtons"),
@@ -157,19 +157,22 @@
     root.append(message);
 
     for (let index = 0; index < PARTICLE_COUNT; index += 1) {
-      const angle = (Math.PI * 2 * index) / PARTICLE_COUNT - Math.PI / 2;
-      const distance = 42 + (index % 3) * 12;
+      const spread = (index + 0.5) / PARTICLE_COUNT;
+      const angle = -Math.PI + Math.PI * spread;
+      const distance = 78 + (index % 6) * 11;
       const particle = document.createElement("span");
-      particle.className = `saving-particle saving-particle-${index % 3}`;
+      particle.className = `saving-particle saving-particle-${index % 4}`;
       particle.style.setProperty("--particle-x", `${Math.cos(angle) * distance}px`);
       particle.style.setProperty("--particle-y", `${Math.sin(angle) * distance}px`);
-      particle.style.setProperty("--particle-delay", `${(index % 4) * 22}ms`);
+      particle.style.setProperty("--particle-fall", `${108 + (index % 5) * 18}px`);
+      particle.style.setProperty("--particle-spin", `${(index % 2 === 0 ? 1 : -1) * (260 + (index % 6) * 55)}deg`);
+      particle.style.setProperty("--particle-delay", `${(index % 7) * 14}ms`);
       root.append(particle);
     }
 
     elements.effectLayer.append(root);
     registerEffectNode(root);
-    window.setTimeout(() => removeEffectNode(root), 1_250);
+    window.setTimeout(() => removeEffectNode(root), 1_500);
   }
 
   function createSpark(origin, target) {
@@ -188,7 +191,7 @@
     targetContainer.classList.remove("saving-summary-pulse");
     void targetContainer.getBoundingClientRect();
     targetContainer.classList.add("saving-summary-pulse");
-    window.setTimeout(() => targetContainer.classList.remove("saving-summary-pulse"), 650);
+    window.setTimeout(() => targetContainer.classList.remove("saving-summary-pulse"), 700);
 
     const delta = document.createElement("span");
     delta.className = "saving-delta";
@@ -196,7 +199,7 @@
     delta.style.setProperty("--delta-x", `${target.x}px`);
     delta.style.setProperty("--delta-y", `${target.y}px`);
     elements.effectLayer.append(delta);
-    window.setTimeout(() => delta.remove(), 850);
+    window.setTimeout(() => delta.remove(), 900);
   }
 
   function playSavingSuccessEffect(amount, origin) {
