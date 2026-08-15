@@ -1,9 +1,11 @@
-const CACHE_NAME = "spending-tracker-v8";
+const CACHE_NAME = "spending-tracker-v9";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./styles.css",
+  "./effects.css",
   "./app.js",
+  "./effect.js",
   "./manifest.json",
   "./icons/android-chrome-192x192.png",
   "./icons/android-chrome-512x512.png",

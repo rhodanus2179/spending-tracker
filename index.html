@@ -10,6 +10,7 @@
   <link rel="icon" href="./icons/favicon.ico">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./effects.css">
 </head>
 <body>
   <main class="app-shell">
@@ -162,6 +163,8 @@
     <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
   </main>
 
+  <div id="effectLayer" class="effect-layer" aria-hidden="true"></div>
+
   <dialog id="noteDialog" class="note-dialog" aria-labelledby="noteDialogTitle">
     <form id="noteForm" class="note-dialog-form">
       <div class="note-dialog-header">
@@ -186,5 +189,6 @@
   </dialog>
 
   <script src="./app.js" defer></script>
+  <script src="./effect.js" defer></script>
 </body>
 </html>
