@@ -251,7 +251,7 @@
     announce(`${formatSignedAmount(amount)}円の記録を取り消しました。`);
   }
 
-  function getRecentUniqueNotes(limit = 4) {
+  function getRecentUniqueNotes(limit = 6) {
     const notes = [];
     const seen = new Set();
     const recentRecords = [...records].sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
